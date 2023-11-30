@@ -24,9 +24,9 @@ public class Account {
     }
 
     public void setClientName(String clientName) {
-        if (this.clientName ==null || this.clientName =="") throw new IllegalArgumentException("Пустое имя клиента!");
+        if (clientName==null || clientName.isEmpty()) throw new IllegalArgumentException("Пустое имя клиента!");
         String oldName = this.clientName;
-        this.clientName = this.clientName;
+        this.clientName = clientName;
         // история команд
         Runnable ch = ()->this.clientName = oldName;
         hist.push(ch);
