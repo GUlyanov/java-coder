@@ -13,9 +13,24 @@ public class Account {
         this.clientName = clientname;
     }
 
+    public Account(Account original) {
+        this.clientName = original.clientName;
+        this.rest = original.getRest();
+    }
+
     public String getClientName() {
         return clientName;
     }
+
+    // Получение списка остатков по валютам (глубокая копия)
+    public Map<Currency, BigDecimal> getRest() {
+        HashMap<Currency,BigDecimal> rez = new HashMap<Currency,BigDecimal>();
+        for (Map.Entry<Currency, BigDecimal> entry : rest.entrySet()) {
+            rez.put(entry.getKey(), entry.getValue());
+        }
+        return rez;
+    }
+
 
     public void undo(){
         if (hist.isEmpty()) throw new RuntimeException("Нет изменений для отката!");
@@ -67,13 +82,50 @@ public class Account {
     }
 
     public AccCopy save(){
-        return new AccCopy(clientName, rest);
+        return new AccCopy(this);
     }
 
     public void restore(AccCopy accCopy){
         this.clientName = accCopy.getClientName();
         this.rest = accCopy.getRest();
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Account account)) return false;
+        return  Objects.equals(getClientName(), account.getClientName()) &&
+                Objects.equals(rest, account.rest);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getClientName(), rest);
+    }
+
+    public Object clone(){
+        Account account = new Account(getClientName());
+        account.rest = new HashMap<Currency,BigDecimal>(rest);
+        return (Object) account;
+    }
+
+    public Object clone1(){
+        Account account = new Account(getClientName());
+        account.rest = new HashMap<Currency,BigDecimal>();
+        for (Map.Entry<Currency, BigDecimal> entry : rest.entrySet()) {
+            account.rest.put(entry.getKey(), entry.getValue());
+        }
+        return (Object) account;
+    }
+
+    static public HashMap<Currency,BigDecimal> copyHash(HashMap<Currency,BigDecimal> original){
+        HashMap<Currency,BigDecimal> rez = new HashMap<Currency,BigDecimal>();
+        for (Map.Entry<Currency, BigDecimal> entry : original.entrySet()) {
+            rez.put(entry.getKey(), entry.getValue());
+        }
+        return rez;
+    }
+
 
 
 }
