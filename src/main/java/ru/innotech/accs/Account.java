@@ -1,13 +1,16 @@
 package ru.innotech.accs;
 
+import java.io.*;
 import java.math.BigDecimal;
 import java.util.*;
 
-public class Account {
+public class Account implements Serializable {
     private String clientName;
     private Map<Currency, BigDecimal> rest = new HashMap<>();
 
-    private Stack<Runnable> hist = new Stack<>();
+    private transient Stack<Runnable> hist = new Stack<>();
+
+    public transient static final String FILE = "data.ser";
 
     public Account(String clientname) {
         this.clientName = clientname;
@@ -25,9 +28,7 @@ public class Account {
     // Получение списка остатков по валютам (глубокая копия)
     public Map<Currency, BigDecimal> getRest() {
         HashMap<Currency,BigDecimal> rez = new HashMap<Currency,BigDecimal>();
-        for (Map.Entry<Currency, BigDecimal> entry : rest.entrySet()) {
-            rez.put(entry.getKey(), entry.getValue());
-        }
+        rez.putAll(rest);
         return rez;
     }
 
@@ -90,6 +91,30 @@ public class Account {
         this.rest = accCopy.getRest();
     }
 
+    public void saveSer(){
+        try {
+            FileOutputStream fos = new FileOutputStream(FILE);
+            ObjectOutputStream oos = new ObjectOutputStream(fos);
+            oos.writeObject(this);
+            oos.close();
+        } catch (Exception e){
+            System.out.println("Exception thrown during test: " + e.toString());
+        }
+    }
+
+    public void restoreSer(){
+        try {
+            FileInputStream fis = new FileInputStream(FILE);
+            ObjectInputStream ois = new ObjectInputStream(fis);
+            Account account = (Account) ois.readObject();
+            this.clientName = account.getClientName();
+            this.rest = account.getRest();
+            ois.close();
+        } catch (Exception e){
+            System.out.println("Exception thrown during test: " + e.toString());
+        }
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -103,20 +128,6 @@ public class Account {
         return Objects.hash(getClientName(), rest);
     }
 
-    public Object clone(){
-        Account account = new Account(getClientName());
-        account.rest = new HashMap<Currency,BigDecimal>(rest);
-        return (Object) account;
-    }
-
-    public Object clone1(){
-        Account account = new Account(getClientName());
-        account.rest = new HashMap<Currency,BigDecimal>();
-        for (Map.Entry<Currency, BigDecimal> entry : rest.entrySet()) {
-            account.rest.put(entry.getKey(), entry.getValue());
-        }
-        return (Object) account;
-    }
 
     static public HashMap<Currency,BigDecimal> copyHash(HashMap<Currency,BigDecimal> original){
         HashMap<Currency,BigDecimal> rez = new HashMap<Currency,BigDecimal>();

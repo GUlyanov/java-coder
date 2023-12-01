@@ -25,10 +25,8 @@ public class AccCopy {
 
     // Получение списка остатков по валютам (глубокая копия)
     public Map<Currency, BigDecimal> getRest() {
-        HashMap<Currency,BigDecimal> rez = new HashMap<Currency,BigDecimal>();
-        for (Map.Entry<Currency, BigDecimal> entry : rest.entrySet()) {
-            rez.put(entry.getKey(), entry.getValue());
-        }
+        HashMap<Currency,BigDecimal> rez = new HashMap<>();
+        rez.putAll(rest);
         return rez;
     }
 

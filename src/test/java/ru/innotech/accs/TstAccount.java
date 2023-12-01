@@ -3,6 +3,7 @@ package ru.innotech.accs;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.io.File;
 import java.math.BigDecimal;
 import java.util.HashMap;
 
@@ -75,4 +76,26 @@ public class TstAccount {
         // проверить, что состояние счета восстановилось к состоянию на момент взятия копии № 2
         Assertions.assertEquals(ac1.equals(av2), true);
     }
+
+    @Test
+    public void TstSaveRestoreSer(){
+        // создали счет ac1
+        Account ac1 = new Account("Иванов");
+        ac1.setCurr(Currency.EUR, BigDecimal.valueOf(12.34));
+        ac1.setCurr(Currency.USD, BigDecimal.valueOf(100.26));
+        Account av1 = new Account(ac1);
+        // сделали копию № 1 счета ac1 - acp1
+        ac1.saveSer();
+        // изменили счет ac1
+        ac1.setClientName("Иванидзе");
+        ac1.setCurr(Currency.EUR, BigDecimal.valueOf(36.28));
+        ac1.setCurr(Currency.RUR, BigDecimal.valueOf(500.20));
+        // восстановили на счете ac1 копию № 1 (acp1)
+        ac1.restoreSer();
+        // проверить, что состояние счета восстановилось к состоянию на момент взятия копии № 1
+        Assertions.assertEquals(ac1.equals(av1), true);
+        // удалить файл
+        new File(Account.FILE).delete();
+    }
+
 }
