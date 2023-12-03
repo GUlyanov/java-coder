@@ -5,13 +5,15 @@ import java.math.BigDecimal;
 import java.util.*;
 
 public class Account implements Serializable {
+    //---------------- 1 Поля класса
     private String clientName;
     private Map<Currency, BigDecimal> rest = new HashMap<>();
 
-    private transient Stack<Runnable> hist = new Stack<>();
+    private transient Deque<Runnable> hist = new ArrayDeque<>();
 
-    public transient static final String FILE = "data.ser";
+    public static final String FILE = "data.ser";
 
+    //------------------ 2 Конструкторы
     public Account(String clientname) {
         this.clientName = clientname;
     }
@@ -20,23 +22,9 @@ public class Account implements Serializable {
         this.clientName = original.clientName;
         this.rest = original.getRest();
     }
-
+    //------------------ 3 Геттеры-сеттеры
     public String getClientName() {
         return clientName;
-    }
-
-    // Получение списка остатков по валютам (глубокая копия)
-    public Map<Currency, BigDecimal> getRest() {
-        HashMap<Currency,BigDecimal> rez = new HashMap<Currency,BigDecimal>();
-        rez.putAll(rest);
-        return rez;
-    }
-
-
-    public void undo(){
-        if (hist.isEmpty()) throw new RuntimeException("Нет изменений для отката!");
-        Runnable hs = hist.pop();
-        hs.run();
     }
 
     public void setClientName(String clientName) {
@@ -48,7 +36,11 @@ public class Account implements Serializable {
         hist.push(ch);
     }
 
-    public void setCurr(Currency curr, BigDecimal amount){
+    // Получение списка остатков по валютам (глубокая копия)
+    public Map<Currency, BigDecimal> getRest() {
+        return new HashMap<>(rest);
+    }
+    public void addCur(Currency curr, BigDecimal amount){
         Runnable ch;
         if (amount.doubleValue() < 0) throw new IllegalArgumentException("Количество валюты отрицательное!");
         BigDecimal oldAmount = rest.put(curr, amount);
@@ -74,14 +66,15 @@ public class Account implements Serializable {
         return rest.get(curr);
     }
 
-    @Override
-    public String toString() {
-        return "Account{" +
-                "clientnName='" + clientName + '\'' +
-                ", rest=" + rest +
-                '}';
+    //------------------ 4 Undo
+    public void undo(){
+        if (hist.isEmpty()) throw new RuntimeException("Нет изменений для отката!");
+        Runnable hs = hist.pop();
+        hs.run();
     }
 
+    //------------------ 5 Копии состояния счета - создать-восстановить
+    // а) Вариант шаблон Memento
     public AccCopy save(){
         return new AccCopy(this);
     }
@@ -98,10 +91,11 @@ public class Account implements Serializable {
             oos.writeObject(this);
             oos.close();
         } catch (Exception e){
-            System.out.println("Exception thrown during test: " + e.toString());
+            System.out.println("Exception thrown during test: " + e);
         }
     }
 
+    // б) Вариант сериализация объекта
     public void restoreSer(){
         try {
             FileInputStream fis = new FileInputStream(FILE);
@@ -111,10 +105,11 @@ public class Account implements Serializable {
             this.rest = account.getRest();
             ois.close();
         } catch (Exception e){
-            System.out.println("Exception thrown during test: " + e.toString());
+            System.out.println("Exception thrown during test: " + e);
         }
     }
 
+    // ------------------6 Служебные методы
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -128,16 +123,13 @@ public class Account implements Serializable {
         return Objects.hash(getClientName(), rest);
     }
 
-
-    static public HashMap<Currency,BigDecimal> copyHash(HashMap<Currency,BigDecimal> original){
-        HashMap<Currency,BigDecimal> rez = new HashMap<Currency,BigDecimal>();
-        for (Map.Entry<Currency, BigDecimal> entry : original.entrySet()) {
-            rez.put(entry.getKey(), entry.getValue());
-        }
-        return rez;
+    @Override
+    public String toString() {
+        return "Account{" +
+                "clientnName='" + clientName + '\'' +
+                ", rest=" + rest +
+                '}';
     }
-
-
 
 }
 
