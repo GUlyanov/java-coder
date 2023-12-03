@@ -16,7 +16,7 @@ public class TestAccount {
 
     @Test
     public void TestAcc2()  {
-        Account acc = new Account("Иванов П.Р.");
+        Account acc  = new Account("Иванов П.Р.");
         Assertions.assertThrows(IllegalArgumentException.class,
                 ()->acc.addCur(Currency.EUR, BigDecimal.valueOf(-2.00)));
     }
