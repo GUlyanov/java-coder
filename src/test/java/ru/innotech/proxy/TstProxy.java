@@ -11,7 +11,7 @@ public class TstProxy {
         StudInt st2 = Utils.<Student>cache(student);
 
         System.out.println("#1.1");
-        Assertions.assertEquals(st1.getName(), "Петя");
+        Assertions.assertEquals(st1.getName(),"Петя");
         System.out.println("#1.2");
         Assertions.assertEquals(st1.getName(),"Петя");
         System.out.println("#2.1");
