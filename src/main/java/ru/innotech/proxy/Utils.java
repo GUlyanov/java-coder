@@ -8,8 +8,6 @@ public class Utils {
         ClassLoader objClassLoader = obj.getClass().getClassLoader();
         //Получаем все интерфейсы, которые реализует оригинальный объект
         Class[] interfaces = obj.getClass().getInterfaces();
-        interfaces = Arrays.copyOf(interfaces, interfaces.length+1);
-        interfaces[interfaces.length-1] = Class.forName("StudIntExt");
 
         //Создаем прокси нашего объекта obj
         T proxyObj = (T) Proxy.newProxyInstance(objClassLoader, interfaces, new AllInvocationHandler(obj));

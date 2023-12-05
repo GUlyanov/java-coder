@@ -18,38 +18,49 @@ public class AllInvocationHandler<T> implements InvocationHandler {
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         Object rez;
+        Method clMethod = getClMeth(method, obj); // по методу интерфейса найдем метод класса для obj
+
         // Анализ аннотаций на вызванном методе
-        if (method.isAnnotationPresent(Cache.class)) {
+        if (clMethod.isAnnotationPresent(Cache.class)) {
             // данный метод кешируется
             if (cache.containsKey(method)) {
                 // метод уже вызывался ранее
-                //System.out.println("значение взято из кэша");
                 resultType = ResultType.FROM_CACHE;
+                System.out.println(resultType.name);
                 rez=cache.get(method);
             } else {
                 // метод вызывается первый раз после очистки кэша - засунуть значение метода в кэш
-                System.out.println("значение вычислено, помещено в кэш");
                 rez = method.invoke(obj, args);
                 resultType = ResultType.IN_CACHE;
+                System.out.println(resultType.name);
                 cache.put(method, rez);
             }
             return rez;
         }
-        if (method.isAnnotationPresent(Setter.class)) {
+        if (clMethod.isAnnotationPresent(Setter.class)) {
             // данный метод не кешируется но изменяет состояние объекта
             cache.clear(); // очищаем кэш
-            System.out.println("очистка кэша");
             resultType = ResultType.CLS_CACHE;
+            System.out.println(resultType.name);
             rez = method.invoke(obj, args);
         } else {
             // данный метод не кешируется и не изменяет состояние объекта
             resultType = ResultType.NO_CACHE;
+            System.out.println(resultType.name);
             rez = method.invoke(obj, args);
         }
         return rez;
     }
 
-    public ResultType getRes() {
-        return resultType;
+    // по методу интерфейса вернуть аналогичный метод класса объекта obj
+    public Method getClMeth(Method method, T obj) {
+        Method rez;
+        try {
+            rez = obj.getClass().getMethod(method.getName(), method.getParameterTypes());
+        } catch (NoSuchMethodException e){
+            return null;
+        }
+        return rez;
     }
+
 }
