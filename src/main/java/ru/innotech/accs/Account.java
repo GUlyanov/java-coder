@@ -52,7 +52,7 @@ public class Account implements Serializable {
         }
         hist.push(ch);
     }
-    public void delCurr(Currency curr){
+    public void delCurr (Currency curr){
         Runnable ch;
         if (curr==null) throw new IllegalArgumentException("Пустая валюта!");
         BigDecimal oldAmount = rest.remove(curr);
