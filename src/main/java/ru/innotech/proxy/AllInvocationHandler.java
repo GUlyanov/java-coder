@@ -26,13 +26,11 @@ public class AllInvocationHandler<T> implements InvocationHandler {
             if (cache.containsKey(method)) {
                 // метод уже вызывался ранее
                 resultType = ResultType.FROM_CACHE;
-                System.out.println(resultType.name);
                 rez=cache.get(method);
             } else {
                 // метод вызывается первый раз после очистки кэша - засунуть значение метода в кэш
                 rez = method.invoke(obj, args);
                 resultType = ResultType.IN_CACHE;
-                System.out.println(resultType.name);
                 cache.put(method, rez);
             }
             return rez;
@@ -41,12 +39,10 @@ public class AllInvocationHandler<T> implements InvocationHandler {
             // данный метод не кешируется но изменяет состояние объекта
             cache.clear(); // очищаем кэш
             resultType = ResultType.CLS_CACHE;
-            System.out.println(resultType.name);
             rez = method.invoke(obj, args);
         } else {
             // данный метод не кешируется и не изменяет состояние объекта
             resultType = ResultType.NO_CACHE;
-            System.out.println(resultType.name);
             rez = method.invoke(obj, args);
         }
         return rez;
