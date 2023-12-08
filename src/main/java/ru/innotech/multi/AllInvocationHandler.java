@@ -2,17 +2,14 @@ package ru.innotech.multi;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
-import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
+
 
 public class AllInvocationHandler<T> implements InvocationHandler {
 
-    private T obj;
+    private final T obj;
 
-    private RezCache cache;
+    private final RezCache cache;
 
-    private ResultType resultType;
 
     public AllInvocationHandler(T obj, long objLifeTimeOut, long cacheClsRate) throws Exception {
         this.obj = obj;
@@ -29,18 +26,15 @@ public class AllInvocationHandler<T> implements InvocationHandler {
             // данный метод кешируется
             if (cache.containsKey(obj, method)) {
                 // метод уже вызывался ранее
-                resultType = ResultType.FROM_CACHE;
                 rez = cache.get(obj, method);
             } else {
                 // метод вызывается первый раз после очистки кэша - засунуть значение метода в кэш
                 rez = method.invoke(obj, args);
-                resultType = ResultType.IN_CACHE;
                 cache.put(obj, method, rez);
             }
             return rez;
         }
         // данный метод не кешируется
-        resultType = ResultType.NO_CACHE;
         rez = method.invoke(obj, args);
         return rez;
     }

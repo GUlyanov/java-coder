@@ -1,13 +1,10 @@
 package ru.innotech.multi;
 
 import org.junit.jupiter.api.*;
-import ru.innotech.multi.StudInt;
-import ru.innotech.multi.Student;
-import ru.innotech.multi.Utils;
 
-public class TstProxy {
+public class TestMulti {
     @Test
-    public void TestProxy() throws ClassNotFoundException {
+    public void TestProxy() throws Exception {
         long objLifeTimeOut = 5*60*1000L;
         long cacheClsRate = 1*60*1000L;
 
