@@ -1,4 +1,4 @@
-package ru.innotech.proxy;
+package ru.innotech.multi;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

@@ -1,18 +1,22 @@
-package ru.innotech.proxy;
+package ru.innotech.multi;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
 public class AllInvocationHandler<T> implements InvocationHandler {
 
     private T obj;
-    private Map<Method, Object> cache = new HashMap<>();
+
+    private RezCache cache;
+
     private ResultType resultType;
 
-    public AllInvocationHandler(T obj) {
+    public AllInvocationHandler(T obj, long objLifeTimeOut, long cacheClsRate) throws Exception {
         this.obj = obj;
+        cache = new RezCache(objLifeTimeOut, cacheClsRate);
     }
 
     @Override
@@ -23,28 +27,21 @@ public class AllInvocationHandler<T> implements InvocationHandler {
         // Анализ аннотаций на вызванном методе
         if (clMethod.isAnnotationPresent(Cache.class)) {
             // данный метод кешируется
-            if (cache.containsKey(method)) {
+            if (cache.containsKey(obj, method)) {
                 // метод уже вызывался ранее
                 resultType = ResultType.FROM_CACHE;
-                rez=cache.get(method);
+                rez = cache.get(obj, method);
             } else {
                 // метод вызывается первый раз после очистки кэша - засунуть значение метода в кэш
                 rez = method.invoke(obj, args);
                 resultType = ResultType.IN_CACHE;
-                cache.put(method, rez);
+                cache.put(obj, method, rez);
             }
             return rez;
         }
-        if (clMethod.isAnnotationPresent(Setter.class)) {
-            // данный метод не кешируется но изменяет состояние объекта
-            cache.clear(); // очищаем кэш
-            resultType = ResultType.CLS_CACHE;
-            rez = method.invoke(obj, args);
-        } else {
-            // данный метод не кешируется и не изменяет состояние объекта
-            resultType = ResultType.NO_CACHE;
-            rez = method.invoke(obj, args);
-        }
+        // данный метод не кешируется
+        resultType = ResultType.NO_CACHE;
+        rez = method.invoke(obj, args);
         return rez;
     }
 

@@ -1,4 +1,4 @@
-package ru.innotech.proxy;
+package ru.innotech.multi;
 
 public enum ResultType {
     FROM_CACHE("значение взято из кэша"),
