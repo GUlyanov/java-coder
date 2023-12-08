@@ -10,7 +10,7 @@ public class RezCache {
     private long cacheClsRate; // частота запуска демона очистки устаревших значений в кэше
     private ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
         @Override
-        public Thread newThread(Runnable r) {
+        public Thread  newThread(Runnable r) {
             Thread th = new Thread(r);
             th.setDaemon(true);
             return th;
