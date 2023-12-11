@@ -7,14 +7,11 @@ import java.util.concurrent.*;
 public class RezCache {
     private ConcurrentHashMap<Key, Object> globalMap = new ConcurrentHashMap<>();
     private long objLifeTimeOut; // время жизни значений в кэше
-    private long cacheClsRate; // частота запуска демона очистки устаревших значений в кэше
-    private ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
-        @Override
-        public Thread  newThread(Runnable r) {
-            Thread th = new Thread(r);
-            th.setDaemon(true);
-            return th;
-        }
+
+    private ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor(r -> {
+        Thread th = new Thread(r);
+        th.setDaemon(true);
+        return th;
     });
 
     public RezCache(long objLifeTimeOut, long cacheClsRate)  throws Exception {
@@ -22,38 +19,25 @@ public class RezCache {
             throw new Exception("Слишком короткий интервал для сохранения в кэше. Интервал следует сделать больше 10 ms");
         }
         this.objLifeTimeOut = objLifeTimeOut;
-        this.cacheClsRate = cacheClsRate;
-        scheduler.scheduleAtFixedRate(new Runnable() {
-
-            @Override
-            public void run() {
-                long current = System.currentTimeMillis();
-                for (Key k : globalMap.keySet()) {
-                    if (!k.isLive(current)) {
-                        globalMap.remove(k);
-                    }
+        scheduler.scheduleAtFixedRate(() -> {
+            long current = System.currentTimeMillis();
+            int n = 0;
+            int m = globalMap.keySet().size();
+            for (Key k : globalMap.keySet()) {
+                if (!k.isLive(current)) {
+                    n++;
+                    globalMap.remove(k);
                 }
             }
+            System.out.println("Очистка кэша. Ключей: " + m +  ". Очищено ключей: " + n);
         }, 1, cacheClsRate, TimeUnit.MILLISECONDS);
     }
 
-     // установка количество миллисекунд - время которое обьект будет краниться в кеше
-    public void setObjLifeTimeOut(long objLifeTimeOut) throws Exception {
-        if (objLifeTimeOut < 100) {
-            throw new Exception("Слишком короткий интервал для сохранения в кэше. Интервал следует сделать больше 10 ms");
-        }
-        this.objLifeTimeOut = objLifeTimeOut;
-    }
 
      // Метод для вставки обьекта в кеш
-     // Время хранения берётся по умолчанию
+     // Время хранения берётся по умолчанию++
     public void put(Object obj, Method method, Object value) {
         globalMap.put(new Key(obj, method, objLifeTimeOut), value);
-    }
-
-    // Метод для вставки обьекта в кеш
-    public void put(Object obj, Method method, Object value, long timeout) {
-        globalMap.put(new Key(obj, method, timeout), value);
     }
 
      // получение значения по ключу
@@ -65,17 +49,6 @@ public class RezCache {
     public boolean containsKey(Object obj, Method method) {
         return globalMap.containsKey(new Key(obj, method));
     }
-
-    // удаляет все значения по ключу из кеша
-    public void remove(Object obj, Method method) {
-        globalMap.remove(new Key(obj, method));
-    }
-
-    // Удаляет все значения из кеша
-    public void removeAll() {
-        globalMap.clear();
-    }
-
 
     //--- Внутренний класс ключа для Hashmap -----------------------------
     private static class Key {
