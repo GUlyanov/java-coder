@@ -5,8 +5,7 @@ import java.util.Objects;
 import java.util.concurrent.*;
 
 public class RezCache {
-    private ConcurrentHashMap<Key, Object> globalMap = new ConcurrentHashMap<>();
-    private long objLifeTimeOut; // время жизни значений в кэше
+    private ConcurrentHashMap<Key, Value> globalMap = new ConcurrentHashMap<>();
 
     private ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor(r -> {
         Thread th = new Thread(r);
@@ -14,17 +13,13 @@ public class RezCache {
         return th;
     });
 
-    public RezCache(long objLifeTimeOut, long cacheClsRate)  throws Exception {
-        if (objLifeTimeOut < 100) {
-            throw new Exception("Слишком короткий интервал для сохранения в кэше. Интервал следует сделать больше 10 ms");
-        }
-        this.objLifeTimeOut = objLifeTimeOut;
+    public RezCache(long cacheClsRate) {
         scheduler.scheduleAtFixedRate(() -> {
             long current = System.currentTimeMillis();
             int n = 0;
             int m = globalMap.keySet().size();
             for (Key k : globalMap.keySet()) {
-                if (!k.isLive(current)) {
+                if (!globalMap.get(k).isLive(current)) {
                     n++;
                     globalMap.remove(k);
                 }
@@ -34,15 +29,23 @@ public class RezCache {
     }
 
 
-     // Метод для вставки обьекта в кеш
-     // Время хранения берётся по умолчанию++
-    public void put(Object obj, Method method, Object value) {
-        globalMap.put(new Key(obj, method, objLifeTimeOut), value);
+    // Метод для вставки обьекта в кеш
+    // Время хранения берётся из аннотации на методе
+    public void put(Object obj, Method method, Object val) {
+        Cache anno = method.getAnnotation(Cache.class);
+        globalMap.put(new Key(obj, method), new Value(val, anno.value()));
     }
 
-     // получение значения по ключу
+    // получение значения по ключу
     public Object get(Object obj, Method method) {
-        return globalMap.get(new Key(obj, method));
+        return globalMap.get(new Key(obj, method)).val;
+    }
+
+    // получить значение Обновить ключ(продлить срок годности)
+    public Object getAndUpdate(Object obj, Method method){
+        Object rez = get(obj, method);
+        put(obj, method, rez);
+        return rez;
     }
 
     // Метод проверки существования ключа
@@ -50,21 +53,15 @@ public class RezCache {
         return globalMap.containsKey(new Key(obj, method));
     }
 
-    //--- Внутренний класс ключа для Hashmap -----------------------------
+    //----------------------- Внутренний класс ключа для Hashmap -----------------------------
     private static class Key {
 
         private final Method method;
         private final String state;
-        private final long timelife;
-
-        public Key(Object obj, Method method, long timeout) {
-            this.method = method;
-            this.state = obj.toString();
-            this.timelife = System.currentTimeMillis() + timeout;
-        }
 
         public Key(Object obj, Method method) {
-            this(obj, method, 0);
+            this.method = method;
+            this.state = obj.toString();
         }
 
         public Method getMethod() {
@@ -75,9 +72,6 @@ public class RezCache {
             return state;
         }
 
-        public boolean isLive(long currentTimeMillis) {
-            return currentTimeMillis < timelife;
-        }
 
         @Override
         public boolean equals(Object obj) {
@@ -90,7 +84,7 @@ public class RezCache {
             final Key other = (Key) obj;
             if (
                     (this.method != other.method && (this.method == null || !this.method.equals(other.method))) &&
-                    (this.state != other.state && (this.state == null || !this.state.equals(other.state)))
+                            (this.state != other.state && (this.state == null || !this.state.equals(other.state)))
             ) { return false; }
             return true;
         }
@@ -106,6 +100,34 @@ public class RezCache {
                     "method=" + method +
                     ", state='" + state + '\'' +
                     '}';
+        }
+    }
+
+
+    //----------------------- Внутренний класс значение для Hashmap -----------------------------
+    private static class Value {
+        private Object val;
+        private final long timelife;
+
+        public Value(Object val, long timeout) {
+            this.val = val;
+            this.timelife = System.currentTimeMillis() + timeout;
+        }
+
+        public boolean isLive(long currentTimeMillis) {
+            return currentTimeMillis < timelife;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof Value value)) return false;
+            return timelife == value.timelife && Objects.equals(val, value.val);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(val, timelife);
         }
     }
 

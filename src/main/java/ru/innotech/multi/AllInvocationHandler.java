@@ -11,9 +11,9 @@ public class AllInvocationHandler<T> implements InvocationHandler {
     private final RezCache cache;
 
 
-    public AllInvocationHandler(T obj, long objLifeTimeOut, long cacheClsRate) throws Exception {
+    public AllInvocationHandler(T obj, long cacheClsRate) throws Exception {
         this.obj = obj;
-        cache = new RezCache(objLifeTimeOut, cacheClsRate);
+        cache = new RezCache(cacheClsRate);
     }
 
     @Override
@@ -24,18 +24,20 @@ public class AllInvocationHandler<T> implements InvocationHandler {
         // Анализ аннотаций на вызванном методе
         if (clMethod.isAnnotationPresent(Cache.class)) {
             // данный метод кешируется
-            if (cache.containsKey(obj, method)) {
-                // метод уже вызывался ранее
-                rez = cache.get(obj, method);
+            if (cache.containsKey(obj, clMethod)) {
+                // метод уже вызывался ранее - вернуть значение из кэша и обновить срок годности ключа
+                //rez = cache.get(obj, clMethod);
+                rez = cache.getAndUpdate(obj, clMethod);
+                System.out.println("...cache");
             } else {
-                // метод вызывается первый раз после очистки кэша - засунуть значение метода в кэш
-                rez = method.invoke(obj, args);
-                cache.put(obj, method, rez);
+                // метод вызывается первый раз для такого значения ключа - засунуть значение метода в кэш
+                rez = clMethod.invoke(obj, args);
+                cache.put(obj, clMethod, rez);
             }
             return rez;
         }
         // данный метод не кешируется
-        rez = method.invoke(obj, args);
+        rez = clMethod.invoke(obj, args);
         return rez;
     }
 
