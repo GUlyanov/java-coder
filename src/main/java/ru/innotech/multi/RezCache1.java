@@ -1,12 +1,17 @@
 package ru.innotech.multi;
 
 import java.lang.reflect.Method;
+import java.util.Collections;
+import java.util.Map;
 import java.util.Objects;
+import java.util.WeakHashMap;
 import java.util.concurrent.*;
 
-// вариант организации кэша № 2 - кэш на основе ConcurrentHashMap и очистка реальная (не подключен)
-public class RezCache {
-    private ConcurrentHashMap<Key, Value> globalMap = new ConcurrentHashMap<>();
+// вариант организации кэша № 1 - кэш на основе синхронизированного WeakHashMap и очистка сборщиком мусора
+// (подключен именно он!)
+public class RezCache1 {
+
+    private volatile Map<Key, Value> globalMap = Collections.synchronizedMap(new WeakHashMap<Key, Value>());
 
     private ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor(r -> {
         Thread th = new Thread(r);
@@ -14,19 +19,20 @@ public class RezCache {
         return th;
     });
 
-    public RezCache(long cacheClsRate) {
+    public RezCache1(long cacheClsRate) {
         if (cacheClsRate==0) return; // очистка кеша отключена
         scheduler.scheduleAtFixedRate(() -> {
             long current = System.currentTimeMillis();
             int n = 0;
             int m = globalMap.keySet().size();
             for (Key k : globalMap.keySet()) {
-                if (!globalMap.get(k).isLive(current)) {
-                    if (globalMap.remove(k)!=null) n++;
+                Value value = globalMap.get(k);
+                if (!value.isLive(current)) {
+                    n = n + value.setKeyNull();
                 }
             }
             if (n>0)
-                System.out.println("Очистка кэша. Очищено ключей: " + n);
+                System.out.println("Очистка кэша. Помечено ключей: " + n);
         }, 1, cacheClsRate, TimeUnit.MILLISECONDS);
     }
 
@@ -36,7 +42,7 @@ public class RezCache {
     public void put(Object obj, Method method, Object val) {
         Cache anno = method.getAnnotation(Cache.class);
         Key key = new Key(obj, method);
-        Value value = new Value(val, anno.value());
+        Value value = new Value(val, anno.value(), key);
         globalMap.put(key, value);
     }
 
@@ -117,8 +123,11 @@ public class RezCache {
         private Object val;
         private long timelife;
 
-        public Value(Object val, long timeout) {
+        private Key key;
+
+        public Value(Object val, long timeout, Key key) {
             this.val = val;
+            this.key = key;
             this.timelife = System.currentTimeMillis() + timeout;
         }
 
@@ -128,6 +137,12 @@ public class RezCache {
 
         public void refreshTimelife(long timeout){
             this.timelife = System.currentTimeMillis() + timeout;
+        }
+
+        public int setKeyNull(){
+            if(this.key==null) return 0;
+            this.key = null;
+            return 1;
         }
 
         @Override

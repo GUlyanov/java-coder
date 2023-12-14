@@ -8,12 +8,11 @@ public class AllInvocationHandler<T> implements InvocationHandler {
 
     private final T obj;
 
-    private final RezCache cache;
-
+    private final RezCache1 cache;
 
     public AllInvocationHandler(T obj, long cacheClsRate) throws Exception {
         this.obj = obj;
-        cache = new RezCache(cacheClsRate);
+        cache = new RezCache1(cacheClsRate);
     }
 
     @Override
@@ -28,16 +27,20 @@ public class AllInvocationHandler<T> implements InvocationHandler {
                 // метод уже вызывался ранее - вернуть значение из кэша и обновить срок годности ключа
                 //rez = cache.get(obj, clMethod);
                 rez = cache.getAndUpdate(obj, clMethod);
-                System.out.println("...cache");
+                Utils.resTp = ResultType.FROM_CACHE;
             } else {
                 // метод вызывается первый раз для такого значения ключа - засунуть значение метода в кэш
                 rez = clMethod.invoke(obj, args);
                 cache.put(obj, clMethod, rez);
+                Utils.resTp = ResultType.IN_CACHE;
             }
+            Utils.mapCnt = cache.MapCnt();
             return rez;
         }
         // данный метод не кешируется
         rez = clMethod.invoke(obj, args);
+        Utils.resTp = ResultType.NO_CACHE;
+        Utils.mapCnt = cache.MapCnt();
         return rez;
     }
 
