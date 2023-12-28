@@ -1,0 +1,12 @@
+2023.12.28 13:57 FioValidator.validate
+                 Аргументы: [0:Model{loginList=[Login{user=User{userName='SV_PETROV', fio='Петров Семен Викторович'}, accessDate=2023-12-23T22:54:21, application='mobile'}, Login{user=User{userName='SV_PETROV', fio='Петров Семен Викторович'}, accessDate=2023-11-05T10:22:51, application='web'}, Login{user=User{userName='DI_EGOROV', fio='Егоров Дормидонт Ильич'}, accessDate=2023-10-15T17:31:18, application='post'}], userList=[User{userName='SV_PETROV', fio='Петров Семен Викторович'}, User{userName='DI_EGOROV', fio='Егоров Дормидонт Ильич'}], fileList=[data\file1.txt]}]
+                 Возврат: true
+2023.12.28 13:57 FioValidator.next
+                 Аргументы: нет
+                 Возврат: AppValidator@f9d8285
+2023.12.28 13:57 AppValidator.validate
+                 Аргументы: [0:Model{loginList=[Login{user=User{userName='SV_PETROV', fio='Петров Семен Викторович'}, accessDate=2023-12-23T22:54:21, application='mobile'}, Login{user=User{userName='SV_PETROV', fio='Петров Семен Викторович'}, accessDate=2023-11-05T10:22:51, application='web'}, Login{user=User{userName='DI_EGOROV', fio='Егоров Дормидонт Ильич'}, accessDate=2023-10-15T17:31:18, application='post'}], userList=[User{userName='SV_PETROV', fio='Петров Семен Викторович'}, User{userName='DI_EGOROV', fio='Егоров Дормидонт Ильич'}], fileList=[data\file1.txt]}]
+                 Возврат: true
+2023.12.28 13:57 AppValidator.next
+                 Аргументы: нет
+                 Возврат: DateValidator@58df2864
