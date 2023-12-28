@@ -4,11 +4,8 @@ import org.springframework.stereotype.Component;
 import ru.inno.tech.mylogins.entity.Login;
 import ru.inno.tech.mylogins.entity.Model;
 import ru.inno.tech.mylogins.entity.User;
-
-import java.io.FileWriter;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.logging.Logger;
 
 @Component
 public class DateValidator implements ModelValidator {

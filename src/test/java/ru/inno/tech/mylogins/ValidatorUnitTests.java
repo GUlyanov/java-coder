@@ -94,8 +94,6 @@ public class ValidatorUnitTests {
 
         ModelValidator ff = new AppValidator();
         ff.validate(md);
-        String newFio = md.getUserList().get(0).getFio();
-        //String newFio = user.getFio();
         Assertions.assertEquals("mobile", login1.getApplication(), "mobile без изменений");
         Assertions.assertEquals("web", login2.getApplication(), "web без изменений");
         Assertions.assertEquals("other: post", login3.getApplication(), "прочие с приставкой other:");

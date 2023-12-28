@@ -21,7 +21,7 @@ public class AppValidator implements ModelValidator {
         List<Login> loginList = model.getLoginList();
         for (Login login: loginList) {
             String s = login.getApplication();
-            if (s=="mobile" || s=="web") continue;
+            if (s.equals("mobile") || s.equals("web")) continue;
             s = "other: " + s;
             login.setApplication(s);
         }

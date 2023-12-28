@@ -60,7 +60,7 @@ public class AopIntegrTest {
         while (validator!=null){
             // проверить порцию данных
             boolean rez = validator.validate(model);
-            if (rez==false) break;
+            if (!rez) break;
             validator = validator.next();
         }
 

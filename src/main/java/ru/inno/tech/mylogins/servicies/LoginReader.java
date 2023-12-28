@@ -33,7 +33,7 @@ public class LoginReader implements ModelSupplier {
                 if(words.length==2) continue;
                 String sDt = words[2].trim();
                 LocalDateTime dDt;
-                if (sDt==null || sDt=="") { dDt = null;}
+                if (sDt.isEmpty()) { dDt = null;}
                 else {
                     DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
                     dDt = LocalDateTime.parse(sDt, dtf);

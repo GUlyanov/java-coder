@@ -1,12 +1,10 @@
 package ru.inno.tech.mylogins.entity;
 
 import jakarta.persistence.*;
-import org.hibernate.annotations.Cascade;
+
 
 import java.io.File;
 import java.time.LocalDateTime;
-
-import static jakarta.persistence.CascadeType.ALL;
 
 @Entity
 @Table(name = "logins")

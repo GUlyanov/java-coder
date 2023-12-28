@@ -3,13 +3,9 @@ package ru.inno.tech.mylogins.aspects;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
-import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
-
 import java.lang.annotation.Annotation;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.OpenOption;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.time.LocalDateTime;
@@ -35,7 +31,7 @@ public class LoggingAspect {
                 strArgs = "Аргументы: [";
                 for (int i = 0; i < arguments.length; i++) {
                     if (i>0) strArgs += ", " ;
-                        strArgs += i + ":" + arguments[i].toString();
+                    strArgs += i + ":" + arguments[i].toString();
                 }
                 strArgs += "]";
             }

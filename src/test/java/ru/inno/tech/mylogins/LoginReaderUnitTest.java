@@ -5,14 +5,9 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.inno.tech.mylogins.entity.Login;
 import ru.inno.tech.mylogins.entity.Model;
 import ru.inno.tech.mylogins.servicies.LoginReader;
 import ru.inno.tech.mylogins.servicies.ModelSupplier;
-
-import java.nio.file.Files;
-import java.nio.file.NoSuchFileException;
-import org.junit.jupiter.api.Assertions;
 
 public class LoginReaderUnitTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(LoginReaderUnitTest.class);

@@ -19,7 +19,7 @@ public class User {
     private String fio;
 
     @OneToMany(mappedBy = "user", orphanRemoval=true)
-    private Set<Login> logins = new HashSet<>();
+    private final Set<Login> logins = new HashSet<>();
 
     public User(String userName, String fio) {
         this.userName = userName;

@@ -12,7 +12,7 @@ public class Controller {
     private ModelSupplier supplier;
     private ModelValidator firstValidator;
     private ModelConsumer consumer;
-    private ModelErrorWriter errorWriter;
+    private final ModelErrorWriter errorWriter;
     private ConnectInfo connInfo;
     private String folderName;
     private Model model;
@@ -78,7 +78,7 @@ public class Controller {
         while (validator!=null){
             // проверить порцию данных
             boolean rez = validator.validate(model);
-            if (rez==false) break;
+            if (!rez) break;
             validator = validator.next();
         }
         errorWriter.writeErrors(folderName, model);
