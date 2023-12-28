@@ -37,7 +37,7 @@ public class LoginSaver implements ModelConsumer{
 
         // Запись логинов в базу
         for (Login login : model.getLoginList()){
-            // Записываем в базу те логины, которые не имеют ошибок после проверок (например, дата не пустая)
+            // Записываем  в базу те логины, которые не имеют ошибок после проверок (например, дата не пустая)
             if(login.getId()==null && login.getError()==null) {
                 loginRepository.save(login);
             }
