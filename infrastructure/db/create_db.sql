@@ -1,0 +1,2 @@
+CREATE DATABASE proddb;
+CREATE SCHEMA prodsch;

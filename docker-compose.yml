@@ -1,0 +1,30 @@
+version: '3.8'
+services:
+  client-backend:
+    image: products
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8189:8189"
+    depends_on:
+      - service-db
+    environment:
+      - SERVER_PORT=8189
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://service-db/proddb?currentSchema=prodsch
+
+  service-db:
+    #image: postgres:14.7-alpine
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5430:5432"
+    volumes:
+      - ./infrastructure/db/create_db.sql:/docker-entrypoint-initdb.d/create_db.sql
+      - db-data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  db-data:
