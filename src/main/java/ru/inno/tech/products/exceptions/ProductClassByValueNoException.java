@@ -1,7 +1,6 @@
 package ru.inno.tech.products.exceptions;
 
 import lombok.Getter;
-import ru.inno.tech.products.entities.Product;
 
 @Getter
 public class  ProductClassByValueNoException extends RuntimeException {

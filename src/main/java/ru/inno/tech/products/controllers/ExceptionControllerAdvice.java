@@ -4,7 +4,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
-import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -18,8 +17,6 @@ import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class ExceptionControllerAdvice {
-    private static final Logger LOGGER = LoggerFactory.getLogger(ExceptionControllerAdvice.class);
-
     // 1.Проверка наличия значения у обязательного поля
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<String> exceptionMethodArgumentNotValidHandler(

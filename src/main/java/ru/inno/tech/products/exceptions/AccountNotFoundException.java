@@ -1,6 +1,5 @@
 package ru.inno.tech.products.exceptions;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @Getter

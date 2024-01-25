@@ -9,7 +9,7 @@ import java.util.Optional;
 import java.util.Set;
 
 public interface ProductRegisterRepository extends JpaRepository<ProductRegister,Integer> {
-    public Optional<ProductRegister> findProductRegisterByProductAndRegisterType(Product product, ProductRegisterType regType);
-    public Set<ProductRegister> findProductRegisterByProduct(Product product);
+    Optional<ProductRegister> findProductRegisterByProductAndRegisterType(Product product, ProductRegisterType regType);
+    Set<ProductRegister> findProductRegisterByProduct(Product product);
     void deleteProductRegisterByProductAndRegisterType(Product prod, ProductRegisterType regType);
 }

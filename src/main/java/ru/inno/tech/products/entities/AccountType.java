@@ -2,8 +2,6 @@ package ru.inno.tech.products.entities;
 
 import jakarta.persistence.*;
 import lombok.*;
-import lombok.experimental.FieldNameConstants;
-
 import java.util.HashSet;
 import java.util.Set;
 

@@ -2,8 +2,6 @@ package ru.inno.tech.products.entities;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.Type;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -58,7 +56,7 @@ public class Product {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (this==null || o==null) return false;
+        if (o==null) return false;
         if (!(o instanceof Product product)) return false;
         if (this.id == product.id) return true;
         if (this.id != product.id) return false;

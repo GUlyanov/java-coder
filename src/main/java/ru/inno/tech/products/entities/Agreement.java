@@ -2,8 +2,6 @@ package ru.inno.tech.products.entities;
 
 import jakarta.persistence.*;
 import lombok.*;
-
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
@@ -35,7 +33,7 @@ public class Agreement {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (this==null || o==null) return false;
+        if (o==null) return false;
         if (!(o instanceof Agreement agr)) return false;
         if (this.id == agr.id) return true;
         if (this.id != agr.id) return false;

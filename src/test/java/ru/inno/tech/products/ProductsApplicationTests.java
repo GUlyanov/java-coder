@@ -3,7 +3,6 @@ package ru.inno.tech.products;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
@@ -14,10 +13,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
-import org.springframework.transaction.annotation.Transactional;
 import ru.inno.tech.products.entities.Product;
 import ru.inno.tech.products.entities.ProductRegister;
 import ru.inno.tech.products.entities.ProductRegisterType;
@@ -191,7 +188,7 @@ class ProductsApplicationTests {
 
 		// 4 Создать допсоглашения к договору
 		ProductCreateRequestBody req2 = crAgrsCrReqBod();
-		resAct =  createAgreements(req2, product.getId());
+		createAgreements(req2, product.getId());
 		product = prodServ.findProductByNumber("123/456", false);
 		Assertions.assertNotNull(product, "Договор с номером 123/456 не найден в базе");
 		Assertions.assertEquals(2, product.getAgreements().size(),"2-Неверное число допсоглашений у договора");
@@ -201,7 +198,6 @@ class ProductsApplicationTests {
 		resAct.andExpect(status().is(400));
 
 		// 6 проверка содержимого ответа на запрос
-		ProductCreateResponseBody resBody = prodServ.formProdResponse(product);
 		String sMess = "Параметр № Дополнительного соглашения (сделки) Number <%s> уже существует для ЭП с ИД  <%s>";
 		String sMess1 = sMess.formatted("15/2", product.getId());
 		String sMess2 = sMess.formatted("18/3", product.getId());
@@ -360,9 +356,9 @@ class ProductsApplicationTests {
 						),
 						new InstanceArrangment(
 							null,null, "СМО",35787,
-							"18/3", LocalDateTime.of(2024,01,12,0,0,0),
+							"18/3", LocalDateTime.of(2024,1,12,0,0,0),
 							null,null,"Открыт",90, null,
-							LocalDate.of(2024,01,13), BigDecimal.valueOf(13.4),
+							LocalDate.of(2024,1,13), BigDecimal.valueOf(13.4),
 							BigDecimal.valueOf(1.5), "ПОНИЖ",
 							BigDecimal.valueOf(12.8), "1.1", "ПОНИЖ",
 							BigDecimal.valueOf(14.9), "1.2", "ПОВЫШ"
