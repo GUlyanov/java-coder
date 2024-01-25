@@ -286,7 +286,7 @@ public class ProductService {
     }
 
     // Очистка базы от допсоглашений, договора, ПР, справочники не чистятся (для тестов)
-    public void deleteAgreementFromDb(){
+    public void  deleteAgreementFromDb(){
         agrRep.deleteAll();
     }
     // Удалить продуктовый регистр у договора по коду типа и номеру продукта
