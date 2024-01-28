@@ -21,11 +21,15 @@ public class Agreement {
     private Product product;
 
     @Enumerated(EnumType.STRING)
+    @Column(name="xtype")
     private ProdType type;
 
+    @Column(name="xnumber")
     private String number;
     private LocalDateTime startDateTime;
     private LocalDateTime endDateTime;
+
+    @Column(name="xdays")
     private Integer days;
     private String reasonClose;
     private String state;

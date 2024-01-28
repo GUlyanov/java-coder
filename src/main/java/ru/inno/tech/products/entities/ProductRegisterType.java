@@ -17,15 +17,16 @@ public class ProductRegisterType {
     @Column(name = "internal_id")
     private Integer id;
 
+    @Column(name="xvalue")
     private String value;
     private String registerTypeName;
 
     @ManyToOne
-    @JoinColumn(name = "product_class_code", referencedColumnName = "value")
+    @JoinColumn(name = "product_class_code", referencedColumnName = "xvalue")
     private ProductClass productClass;
 
     @ManyToOne
-    @JoinColumn(name = "account_type", referencedColumnName = "value")
+    @JoinColumn(name = "account_type", referencedColumnName = "xvalue")
     private AccountType accountType;
 
     @OneToMany(mappedBy = "registerType")
@@ -36,6 +37,11 @@ public class ProductRegisterType {
         this.registerTypeName = registerTypeName;
         this.productClass = productClass;
         this.accountType = accountType;
+    }
+
+    public ProductRegisterType(Integer id, String value) {
+        this.id = id;
+        this.value = value;
     }
 
     public void addProductRegister(ProductRegister register){

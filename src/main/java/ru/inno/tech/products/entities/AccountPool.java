@@ -16,6 +16,7 @@ public class AccountPool {
     private String branchCode;
     private String currencyCode;
     private String mdmCode;
+    @Column(name="xpriority")
     private String priority;
     private String registryTypeCode;
     private String accounts;

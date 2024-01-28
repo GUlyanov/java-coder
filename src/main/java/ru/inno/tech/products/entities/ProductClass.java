@@ -17,6 +17,7 @@ public class ProductClass {
     @Column(name = "internal_id")
     private Integer id;
 
+    @Column(name="xvalue")
     private String value;
     private String gblCode;
     private String gblName;
@@ -39,6 +40,11 @@ public class ProductClass {
         this.productRowName = productRowName;
         this.subclassCode = subclassCode;
         this.subclassName = subclassName;
+    }
+
+    public ProductClass(Integer id, String value) {
+        this.id = id;
+        this.value = value;
     }
 
     public void addProductRegisterType(ProductRegisterType registerType){

@@ -18,7 +18,7 @@ public class ProductRegister {
     private Product product;
 
     @ManyToOne
-    @JoinColumn(name = "type", referencedColumnName = "value")
+    @JoinColumn(name = "xtype", referencedColumnName = "xvalue")
     private ProductRegisterType registerType;
 
     @Column(name = "account_id")

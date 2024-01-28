@@ -27,12 +27,10 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @SpringBootTest
-//@DataJpaTest
 @EnableTransactionManagement
 @AutoConfigureMockMvc
-//@WebMvcTest
 @TestPropertySource(properties = {"spring.jpa.hibernate.ddl-auto=validate"})
-class ProductsApplicationTests {
+class IntegrateTests {
 	@Autowired
 	private MockMvc mockMvc;
 	@Autowired
@@ -55,7 +53,7 @@ class ProductsApplicationTests {
 	@DisplayName("1.1.Создать договор. Ошибка: обязательные поля в запросе не заполнены")
 	void test1_1() throws Exception{
 		// 1 Создать тестовый запрос на создание
-		ProductCreateRequestBody req = crProdCrReqBod();
+		ProductCreateRequestBody req = TestDataCreator.crProdCrReqBod();
 		req.setContractNumber(null); // обязательное поле
 		req.setPriority(null);       // обязательное поле
 		var reqStr = mapper.writeValueAsString(req);
@@ -75,7 +73,7 @@ class ProductsApplicationTests {
 	void test1_2() throws Exception {
 
 		// 1 Создать тестовый запрос на создание
-		ProductCreateRequestBody req = crProdCrReqBod();
+		ProductCreateRequestBody req = TestDataCreator.crProdCrReqBod();
 		req.setProductCode("XXXX"); // несуществующий код
 		var reqStr = mapper.writeValueAsString(req);
 
@@ -93,14 +91,14 @@ class ProductsApplicationTests {
 	@DisplayName("1.3.Создать договор. Ошибка: договор с таким номером уже существует в базе")
 	void test1_3() throws Exception {
 		// 1 Создать тестовый запрос на создание договора
-		ProductCreateRequestBody req = crProdCrReqBod();
+		ProductCreateRequestBody req = TestDataCreator.crProdCrReqBod();
 
 		// 2 Создать в базе договор
-		ResultActions resAct = createProduct(req);
+		ResultActions resAct = sendProductCreateRequest(req);
 		resAct.andExpect(status().is(200));
 
 		// 3 Выполнение запроса повторно, получение сообщения об ошибке и статус 400
-		resAct = createProduct(req);
+		resAct = sendProductCreateRequest(req);
 		resAct.andExpect(status().is(400));
 
 		// 4 Проверка текста сообщения об ошибке в теле
@@ -115,10 +113,10 @@ class ProductsApplicationTests {
 	@DisplayName("1.4.Создать договор. Успешно")
 	void test1_4() throws Exception {
 		// 1 Создать тестовый запрос на создание
-		ProductCreateRequestBody req = crProdCrReqBod();
+		ProductCreateRequestBody req = TestDataCreator.crProdCrReqBod();
 
 		// 2 Создать договор
-		ResultActions resAct = createProduct(req);
+		ResultActions resAct = sendProductCreateRequest(req);
 		resAct.andExpect(status().is(200));
 
 		// 3 проверка создания договора в базе
@@ -147,8 +145,8 @@ class ProductsApplicationTests {
 	@DisplayName("2.1.Создать допсоглашения к существующему договору. Успешно")
 	void test2_1() throws Exception {
 		// 1 Создать договор
-		ProductCreateRequestBody req1 = crProdCrReqBod();
-		ResultActions resAct = createProduct(req1);
+		ProductCreateRequestBody req1 = TestDataCreator.crProdCrReqBod();
+		ResultActions resAct = sendProductCreateRequest(req1);
 		resAct.andExpect(status().is(200));
 
 		// 2 Найти договор в базе по номеру
@@ -157,8 +155,8 @@ class ProductsApplicationTests {
 		Assertions.assertEquals(2, product.getRegisters().size(),"1-Неверное число продуктовых регистров у договора");
 
 		// 3 Создать допосоглашения к существующему договору
-		ProductCreateRequestBody req2 = crAgrsCrReqBod();
-		resAct = createAgreements(req2, product.getId());
+		ProductCreateRequestBody req2 = TestDataCreator.crAgrsCrReqBod();
+		resAct = sendAgreementCreateRequest(req2, product.getId());
 		resAct.andExpect(status().is(200));
 
 		// 4 проверка наличия допосоглашений договора в базе, а также регистров для полноты ответа
@@ -178,8 +176,8 @@ class ProductsApplicationTests {
 	@DisplayName("2.2.Создать допсоглашения к существующему договору. Ошибка. Соглашение с таким номером у договора есть")
 	void test2_2() throws Exception {
 		// 1 Создать договор
-		ProductCreateRequestBody req1 = crProdCrReqBod();
-		ResultActions resAct = createProduct(req1);
+		ProductCreateRequestBody req1 = TestDataCreator.crProdCrReqBod();
+		ResultActions resAct = sendProductCreateRequest(req1);
 		resAct.andExpect(status().is(200));
 
 		// 2 Найти договор в базе по номеру
@@ -187,14 +185,14 @@ class ProductsApplicationTests {
 		Assertions.assertNotNull(product, "Договор не открыт");
 
 		// 4 Создать допсоглашения к договору
-		ProductCreateRequestBody req2 = crAgrsCrReqBod();
-		createAgreements(req2, product.getId());
+		ProductCreateRequestBody req2 = TestDataCreator.crAgrsCrReqBod();
+		sendAgreementCreateRequest(req2, product.getId());
 		product = prodServ.findProductByNumber("123/456", false);
 		Assertions.assertNotNull(product, "Договор с номером 123/456 не найден в базе");
 		Assertions.assertEquals(2, product.getAgreements().size(),"2-Неверное число допсоглашений у договора");
 
 		// 5 Повторно создать допосоглашения к договору
-		resAct =  createAgreements(req2, product.getId());
+		resAct =  sendAgreementCreateRequest(req2, product.getId());
 		resAct.andExpect(status().is(400));
 
 		// 6 проверка содержимого ответа на запрос
@@ -211,8 +209,8 @@ class ProductsApplicationTests {
 	void test3_1() throws Exception {
 		// 1 Подготовка среды для теста
 		// 1.1. Создать договор
-		ProductCreateRequestBody req1 = crProdCrReqBod();
-		ResultActions resAct = createProduct(req1);
+		ProductCreateRequestBody req1 = TestDataCreator.crProdCrReqBod();
+		ResultActions resAct = sendProductCreateRequest(req1);
 		resAct.andExpect(status().is(200));
 		// 1.1.Найти договор в базе по номеру
 		Product product = prodServ.findProductByNumber("123/456", false);
@@ -225,10 +223,10 @@ class ProductsApplicationTests {
 		Assertions.assertNull(prodReg, "1.4.Не удалось удалить продуктовый регистр");
 
 		// 2 Создать тестовый запрос на создание дополнительного продуктового регистра к существующему договору
-		ProdRegCreateRequestBody req2 = crProdRegCrReqBod();
+		ProdRegCreateRequestBody req2 = TestDataCreator.crProdRegCrReqBod();
 
 		// 3 Создание продуктового регистра
-		resAct = createProdReg(req2, product.getId());
+		resAct = sendProdRegCreateRequest(req2, product.getId());
 		resAct.andExpect(status().is(200));
 
 		// 4 проверка создания продуктового регистра в базе
@@ -256,16 +254,16 @@ class ProductsApplicationTests {
 	@DisplayName("3.2.Создать доп продуктовый регистр к существующему договору. Ошибка. ПР с таким типом уже существует у договора")
 	void test3_2() throws Exception {
 		// 1 Создать договор (на этот раз мы не удаляем один из ПР договора)
-		ProductCreateRequestBody req1 = crProdCrReqBod();
-		ResultActions resAct = createProduct(req1);
+		ProductCreateRequestBody req1 = TestDataCreator.crProdCrReqBod();
+		ResultActions resAct = sendProductCreateRequest(req1);
 		resAct.andExpect(status().is(200));
 
 		// 2 Создать тестовый запрос на создание дополнительного продуктового регистра к существующему договору
-		ProdRegCreateRequestBody req2 = crProdRegCrReqBod();
+		ProdRegCreateRequestBody req2 = TestDataCreator.crProdRegCrReqBod();
 		Product product = prodServ.findProductByNumber(req1.getContractNumber(), false);
 
 		// 3 Создание продуктового регистра
-		resAct = createProdReg(req2, product.getId());
+		resAct = sendProdRegCreateRequest(req2, product.getId());
 		resAct.andExpect(status().is(400));
 
 		// 4 формирование тела ожидаемого ответа
@@ -274,9 +272,9 @@ class ProductsApplicationTests {
 		resAct.andExpect(content().string(sMess));
 	}
 
-	// Вспомогательные методы
+	//========  Вспомогательные методы - передача запросов на создание ччерез MockMvc ===========================
 	// Cоздание договора
-	ResultActions createProduct(ProductCreateRequestBody req) throws Exception {
+	ResultActions sendProductCreateRequest(ProductCreateRequestBody req) throws Exception {
 		var reqStr = mapper.writeValueAsString(req);
 
 		// Передача запроса и получение ответа
@@ -287,11 +285,11 @@ class ProductsApplicationTests {
 	}
 
 	// Cоздание допсоглашений к существующему договору c id
-	ResultActions createAgreements(ProductCreateRequestBody req, Integer id) throws Exception {
+	ResultActions sendAgreementCreateRequest(ProductCreateRequestBody req, Integer id) throws Exception {
 		req.setInstanceId(id);
 		var reqStr = mapper.writeValueAsString(req);
 
-		// 4 передача запроса и получение ответа
+		// передача запроса и получение ответа
 		ResultActions resAct = mockMvc.perform(post("/corporate-settlement-instance/create")
 										.content(reqStr)
 										.contentType(MediaType.APPLICATION_JSON));
@@ -299,7 +297,7 @@ class ProductsApplicationTests {
 	}
 
 	// Cоздание доп продуктового регистра к существующему договору c id
-	ResultActions createProdReg(ProdRegCreateRequestBody req, Integer id) throws Exception {
+	ResultActions sendProdRegCreateRequest(ProdRegCreateRequestBody req, Integer id) throws Exception {
 		req.setInstanceId(id);
 		var reqStr = mapper.writeValueAsString(req);
 
@@ -310,75 +308,6 @@ class ProductsApplicationTests {
 		return resAct;
 	}
 
-	//============================================================================================
-	// Тело запроса на создание договора без допсоглашений
-	public static ProductCreateRequestBody crProdCrReqBod(){
-		ProductCreateRequestBody req = new ProductCreateRequestBody();
-		req.setInstanceId(0);
-		req.setProductType("ДОГОВОР");
-		req.setProductCode("02.001.005");
-		req.setRegisterType("02.001.005_45343_CoDowFF");
-		req.setMdmCode("13");
-		req.setContractNumber("123/456");
-		req.setContractDate(LocalDate.of(2019,12,25));
-		req.setPriority("00");
-		req.setInterestRatePenalty(BigDecimal.valueOf(11.34));
-		req.setMinimalBalance(BigDecimal.valueOf(10500.00));
-		req.setThresholdAmount(BigDecimal.valueOf(15000.00));
-		req.setAccountingDetails("Имеются ограничения");
-		req.setRateType("Обычная");
-		req.setTaxPercentageRate(BigDecimal.valueOf(15.33));
-		req.setTechnicalOverdraftLimitAmount(BigDecimal.valueOf(10.77));
-		req.setContractId(1770);
-		req.setBranchCode("0021");
-		req.setIsoCurrencyCode("500");
-		req.setUrgencyCode("00");
-		req.setReferenceCode(3675);
-		req.setAdditionalPropertyList(
-				List.of(new AdditionalProperty("RailwayRegionOwn", "ABC", "Регион принадлежности железной дороги"),
-						new AdditionalProperty("counter", "123", "Счетчик")));
-		req.setInstanceArrangmentList(null);
-		return req;
-	}
-
-	// Тело запроса на создание двух допсоглашений для существующего договора
-	public static ProductCreateRequestBody crAgrsCrReqBod(){
-		ProductCreateRequestBody req = crProdCrReqBod();
-		req.setInstanceArrangmentList(
-				List.of(new InstanceArrangment(
-							null,null, "НСО",null,
-							"15/2", LocalDateTime.of(2023,12,23,0,0,0),
-							null,null,"Открыт",365, null,
-							LocalDate.of(2023,12,31), BigDecimal.valueOf(12.0),
-							BigDecimal.valueOf(1.7), "ПОВЫШ",
-							BigDecimal.valueOf(12.0), "1.2", "ПОНИЖ",
-							BigDecimal.valueOf(15.4), "1.4", "ПОВЫШ"
-						),
-						new InstanceArrangment(
-							null,null, "СМО",35787,
-							"18/3", LocalDateTime.of(2024,1,12,0,0,0),
-							null,null,"Открыт",90, null,
-							LocalDate.of(2024,1,13), BigDecimal.valueOf(13.4),
-							BigDecimal.valueOf(1.5), "ПОНИЖ",
-							BigDecimal.valueOf(12.8), "1.1", "ПОНИЖ",
-							BigDecimal.valueOf(14.9), "1.2", "ПОВЫШ"
-						)
-				)
-		);
-		return req;
-	}
-
-	// Тело запроса на создание продуктового регистра для существующего договора
-	public static ProdRegCreateRequestBody crProdRegCrReqBod(){
-		ProdRegCreateRequestBody req = new ProdRegCreateRequestBody();
-		req.setRegistryTypeCode("02.001.005_45344_CoPalFF");
-		req.setBranchCode("0021");
-		req.setCurrencyCode("500");
-		req.setMdmCode("13");
-		req.setPriorityCode("00");
-		req.setSalesCode("50014");
-		return req;
-	}
 
 }
 

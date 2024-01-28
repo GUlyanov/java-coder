@@ -7,7 +7,7 @@ import java.util.Optional;
 
 public interface AgreementRepository extends JpaRepository<Agreement, Integer> {
 
-    public Optional<Agreement> findAgreementByProductAndNumber(Product product, String number);
+    Optional<Agreement> findAgreementByProductAndNumber(Product product, String number);
 }
 
 

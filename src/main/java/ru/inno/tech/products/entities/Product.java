@@ -26,14 +26,19 @@ public class Product {
     private String clientId;
 
     @Enumerated(EnumType.STRING)
+    @Column(name="xtype")
     private ProdType type;
 
+    @Column(name="xnumber")
     private String number;
 
+    @Column(name="xpriority")
     private String priority;
     private LocalDate dateOfConclusion;
     private LocalDateTime startDateTime;
     private LocalDateTime endDateTime;
+
+    @Column(name="xdays")
     private Integer days;
     private BigDecimal penaltyRate;
     private BigDecimal nso;
