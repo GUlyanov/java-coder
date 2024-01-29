@@ -3,6 +3,7 @@ package ru.inno.tech.products;
 import ru.inno.tech.products.entities.ProdType;
 import ru.inno.tech.products.entities.Product;
 import ru.inno.tech.products.entities.ProductClass;
+import ru.inno.tech.products.entities.ProductRegister;
 import ru.inno.tech.products.requests.AdditionalProperty;
 import ru.inno.tech.products.requests.InstanceArrangment;
 import ru.inno.tech.products.requests.ProdRegCreateRequestBody;
@@ -104,5 +105,15 @@ public class TestDataCreator {
         return prod;
     }
 
+    public static ProductRegister createProductRegister(){
+        ProductRegister prodReg = new ProductRegister();
+        prodReg.setId(null);
+        prodReg.setRegisterType(null);
+        prodReg.setCurrentCode("500");
+        prodReg.setState("Открыт");
+        prodReg.setAccountNumber("453432352436453271");
+        prodReg.setAccount(3);
+        return prodReg;
+    }
 
 }
