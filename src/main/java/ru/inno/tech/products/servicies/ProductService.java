@@ -319,31 +319,31 @@ public class ProductService {
         int n = (new Random()).nextInt(words.length);
         return words[n].trim();
     }
-    // Привязка счета к продуктовому регистру (у продукта выбираем ПР с типом, указанным в запросе)
+    // Привязка счетов к продуктовым регистрам договора
     public void setAccountForProdReg(ProductCreateRequestBody reqBody, Product product){
-        String regTypeValue = reqBody.getRegisterType();
-        if (regTypeValue!=null) {
-            AccountPool accPoolRec = new AccountPool(null, reqBody.getBranchCode(),
+        // перебираем ПР договора
+        for (ProductRegister prodReg : product.getRegisters()) {
+            String regTypeValue = prodReg.getRegisterType().getValue();
+            if (regTypeValue!=null) {
+                AccountPool accPoolRec = new AccountPool(null, reqBody.getBranchCode(),
                     reqBody.getIsoCurrencyCode(), reqBody.getMdmCode(),
                     reqBody.getPriority(),
                     reqBody.getRegisterType(), null);
-            AccountPool accPool = getAccountPool(accPoolRec, true);
-            if(accPool==null) return;
-            String accNumber = getAccount(accPool);
-            for (ProductRegister prodReg : product.getRegisters()) {
-                if (prodReg.getRegisterType().getValue().equals(regTypeValue)) {
-                    prodReg.setAccount(accPool.getId());
-                    prodReg.setAccountNumber(accNumber);
-                    prodRegRep.save(prodReg);
-                }
+                AccountPool accPool = getAccountPool(accPoolRec, true);
+                if(accPool==null) return;
+                String accNumber = getAccount(accPool);
+                prodReg.setAccount(accPool.getId());
+                prodReg.setAccountNumber(accNumber);
+                prodRegRep.save(prodReg);
             }
         }
     }
+    // Привязка счета к созданому дополнительному ПР для договора
     public void setAccountForProdReg(ProdRegCreateRequestBody reqBody, ProductRegister prodReg){
         if (prodReg!=null) {
             AccountPool accPoolRec = new AccountPool(null, reqBody.getBranchCode(),
                     reqBody.getCurrencyCode(), reqBody.getMdmCode(), reqBody.getPriorityCode(),
-                    reqBody.getRegistryTypeCode(), null);
+                    prodReg.getRegisterType().getValue(), null);
             AccountPool accPool = getAccountPool(accPoolRec, true);
             if(accPool==null) return;
             String accNumber = getAccount(accPool);
