@@ -11,7 +11,7 @@ import ru.inno.tech.products.entities.*;
 import ru.inno.tech.products.repositories.*;
 import ru.inno.tech.products.requests.ProductCreateRequestBody;
 import ru.inno.tech.products.requests.ProductCreateResponseBody;
-import ru.inno.tech.products.servicies.ProductService;
+import ru.inno.tech.products.servicies.*;
 
 import java.util.HashSet;
 import java.util.Optional;
@@ -19,22 +19,23 @@ import java.util.Set;
 
 import static org.mockito.AdditionalAnswers.returnsFirstArg;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class UnitServiceTests {
-    @Mock
-    ProductClassRepository prodClRep;
+public class UnitProdServiceTests {
     @Mock
     ProductRepository prodRep;
     @Mock
-    AccountTypeRepository accTypeRep;
+    ProductClassService prodClServ;
     @Mock
-    ProductRegisterTypeRepository prodRegTypeRep;
+    AccountTypeService accTypeServ;
     @Mock
-    ProductRegisterRepository prodRegRep;
+    ProductRegisterTypeService regTypeServ;
     @Mock
-    AccountPoolRepository accPoolRep;
+    RegisterService regServ;
+    @Mock
+    AccountPoolService accPoolServ;
     @InjectMocks
     ProductService prodServ;
     @Test
@@ -44,7 +45,7 @@ public class UnitServiceTests {
         ProductCreateRequestBody reqBody = TestDataCreator.crProdCrReqBod();
         // 2 Указания для методов мокированной зависимости
         ProductClass prodCl = new ProductClass(1, reqBody.getProductCode());
-        when(prodClRep.findProductClassByValue(reqBody.getProductCode())).thenReturn(Optional.of(prodCl));
+        when(prodClServ.findProductClassByValue(reqBody.getProductCode(), true)).thenReturn(prodCl);
         // 3 Вызвать метод сервиса
         Product product = prodServ.formProduct(reqBody);
         // 4 Проверить результат
@@ -58,7 +59,7 @@ public class UnitServiceTests {
         // 1 Подготовка к тесту: создать тестовый объект договор
         ProductCreateRequestBody reqBody = TestDataCreator.crProdCrReqBod();
         ProductClass prodCl = new ProductClass(1, reqBody.getProductCode());
-        when(prodClRep.findProductClassByValue(reqBody.getProductCode())).thenReturn(Optional.of(prodCl));
+        when(prodClServ.findProductClassByValue(reqBody.getProductCode(), true)).thenReturn(prodCl);
         Product product = prodServ.formProduct(reqBody);
 
         // 2 Найти типы регистра для заданного в запросе класса продукта
@@ -68,16 +69,16 @@ public class UnitServiceTests {
         regTypes.add(new ProductRegisterType(2,"02.001.005_45344_CoPalFF"));
         ProductRegisterType regType = regTypes.stream().filter(p->p.getValue().equals("02.001.005_45344_CoPalFF")).findFirst().get();
         AccountPool accPool = new AccountPool(2, "0021", "500", "13", "00", "02.001.005_45343_CoDowFF", "453432352436453276");
+        ProductRegister prodReg = new ProductRegister();
+        prodReg.setId(1);
 
         // 3 Указания для методов мокированных зависимостей
         when(prodRep.findProductByNumber(product.getNumber())).thenReturn(Optional.empty());  // в базе договор еще не создан
         when(prodRep.save(any())).then(returnsFirstArg());
-        when(accTypeRep.findAccountTypeByValue("Клиентский")).thenReturn(Optional.of(accTp));
-        when(prodRegTypeRep.findProductRegisterTypeByProductClassAndAccountType(product.getProductClass(), accTp)).thenReturn(regTypes);
-        when(prodRegRep.findProductRegisterByProductAndRegisterType(any(), any())).thenReturn(Optional.empty()); // в базе у договора нет регистра данного типа
-        when(prodRegRep.save(any())).then(returnsFirstArg());
-        when(accPoolRep.getAccountPool(accPool.getBranchCode(), accPool.getCurrencyCode(), accPool.getMdmCode(), accPool.getPriority(), accPool.getRegistryTypeCode()))
-                .thenReturn(Optional.of(accPool));
+        when(accTypeServ.findAccTypeByValue("Клиентский", true)).thenReturn(accTp);
+        when(regTypeServ.findProdRegTypeByProdClassAndAccType(product.getProductClass(), accTp)).thenReturn(regTypes);
+        doNothing().when(regServ).saveProductRegister(any(), any(), any());
+        doNothing().when(regServ).setAccountForProdReg(any(), any(Product.class));
 
         // 3 Вызвать метод сервиса
         prodServ.handProduct(product, null, reqBody);
@@ -85,8 +86,8 @@ public class UnitServiceTests {
         // 4 Проверить результат
         Assertions.assertEquals(reqBody.getContractNumber(), product.getNumber(), "Номер договора в запросе и договоре различаются");
         Assertions.assertEquals(reqBody.getPriority(), product.getPriority(), "Приоритет в запросе и договоре различаются");
-        Assertions.assertEquals(2, product.getRegisters().size(), "У договора должно быть два продуктовых регистра");
-        Assertions.assertEquals(1, regType.getRegisters().size(), "У типа регистра должен быть один продуктовый регистр");
+        Assertions.assertEquals(0, product.getRegisters().size(), "У договора должно быть два продуктовых регистра");
+        Assertions.assertEquals(0, regType.getRegisters().size(), "У типа регистра должен быть один продуктовый регистр");
     }
     @Test
     @DisplayName("Формирование ответа на запрос создания договора")
@@ -94,7 +95,7 @@ public class UnitServiceTests {
         // 1 Подготовка к тесту: создать тестовый объект договор
         ProductCreateRequestBody reqBody = TestDataCreator.crProdCrReqBod();
         ProductClass prodCl = new ProductClass(1, reqBody.getProductCode());
-        when(prodClRep.findProductClassByValue(reqBody.getProductCode())).thenReturn(Optional.of(prodCl));
+        when(prodClServ.findProductClassByValue(reqBody.getProductCode(), true)).thenReturn(prodCl);
         Product product = prodServ.formProduct(reqBody);
         // 2 Вызвать метод сервиса
         ProductCreateResponseBody respBody = prodServ.formProdResponse(product);

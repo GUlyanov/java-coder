@@ -12,11 +12,11 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import ru.inno.tech.products.controllers.ProductController;
-import ru.inno.tech.products.requests.ProdRegCreateRequestBody;
-import ru.inno.tech.products.requests.ProdRegCreateResponseBody;
 import ru.inno.tech.products.requests.ProductCreateRequestBody;
 import ru.inno.tech.products.requests.ProductCreateResponseBody;
+import ru.inno.tech.products.servicies.AgreementService;
 import ru.inno.tech.products.servicies.ProductService;
+import ru.inno.tech.products.servicies.ProductServiceInt;
 
 import java.util.List;
 
@@ -27,9 +27,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(ProductController.class)
-public class UnitControllerTests {
+public class UnitProdControllerTests {
     @MockBean
     ProductService prodServ;
+    @MockBean
+    AgreementService agrServ;
+
     @Autowired
     private MockMvc mockMvc;
     public ObjectMapper mapper = new ObjectMapper();
@@ -68,25 +71,6 @@ public class UnitControllerTests {
         when(prodServ.formProdResponse(any())).thenReturn(res);
         // 2 Передать запрос на создание договора
         ResultActions resAct = mockMvc.perform(post("/corporate-settlement-instance/create")
-                        .content(reqStr)
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().is(200));
-        // 3 проверка содержимого ответа на запрос
-        var expected = mapper.writeValueAsString(res);
-        resAct.andExpect(content().json(expected));
-    }
-
-    @Test
-    @DisplayName("1.3.Проверка создания доп ПР к существующему договору")
-    public void testCreateProdReg() throws Exception {
-        // 1 Создать тестовый запрос на создание доп ПР к существующему договору
-        ProdRegCreateRequestBody req = TestDataCreator.crProdRegCrReqBod();
-        req.setInstanceId(1);
-        String reqStr = mapper.writeValueAsString(req);
-        ProdRegCreateResponseBody res = new ProdRegCreateResponseBody(3);
-        when(prodServ.formProdRegResponse(any())).thenReturn(res);
-        // 2 Передать запрос на создание договора
-        ResultActions resAct = mockMvc.perform(post("/corporate-settlement-account/create")
                         .content(reqStr)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().is(200));

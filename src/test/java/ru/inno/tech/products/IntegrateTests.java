@@ -1,14 +1,17 @@
 package ru.inno.tech.products;
 
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import org.hibernate.annotations.processing.SQL;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.AFTER_TEST_METHOD;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -19,7 +22,7 @@ import ru.inno.tech.products.entities.Product;
 import ru.inno.tech.products.entities.ProductRegister;
 import ru.inno.tech.products.entities.ProductRegisterType;
 import ru.inno.tech.products.requests.*;
-import ru.inno.tech.products.servicies.ProductService;
+import ru.inno.tech.products.servicies.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -30,11 +33,16 @@ import java.util.List;
 @EnableTransactionManagement
 @AutoConfigureMockMvc
 @TestPropertySource(properties = {"spring.jpa.hibernate.ddl-auto=validate"})
+@Sql(value="/clear-data.sql", executionPhase=AFTER_TEST_METHOD)
 class IntegrateTests {
 	@Autowired
 	private MockMvc mockMvc;
 	@Autowired
-	private ProductService prodServ;
+	private ProductServiceInt prodServ;
+	@Autowired
+	private RegisterServiceInt regServ;
+	@Autowired
+	private ProductRegisterTypeService regTypeServ;
 
 	public ObjectMapper mapper = new ObjectMapper();
 
@@ -45,7 +53,6 @@ class IntegrateTests {
 
 	@AfterEach
 	public void resetDb() {
-		prodServ.resetDb();
 	}
 
 	//----------------------------------------------------------------------------------------------------
@@ -125,8 +132,8 @@ class IntegrateTests {
 		Assertions.assertNotNull(product.getId(), "Не создан договор");
 		//Assertions.assertEquals(1, prodServ.findProductRegisterByProduct(product).size());
 		Assertions.assertEquals(2, product.getRegisters().size(), "Не создан продуктовый регистр!");
-		ProductRegisterType regType = prodServ.findProdRegTypeByValue("02.001.005_45343_CoDowFF", true);
-		ProductRegister prodReg = prodServ.findProdRegByProductAndRegType(product, regType, false);
+		ProductRegisterType regType = regTypeServ.findProdRegTypeByValue("02.001.005_45343_CoDowFF", true);
+		ProductRegister prodReg = regServ.findProdRegByProductAndRegType(product, regType, false);
 		Assertions.assertNotNull(prodReg, "Не создан продуктовый регистр с кодом типа 02.001.005_45343_CoDowFF");
 		Assertions.assertNotNull(prodReg.getAccount(), "Не получен счет для продуктового регистра договора!");
 		Assertions.assertNotNull(prodReg.getAccountNumber(), "Не получен номер счета для продуктового регистра договора!");
@@ -215,11 +222,11 @@ class IntegrateTests {
 		// 1.1.Найти договор в базе по номеру
 		Product product = prodServ.findProductByNumber("123/456", false);
 		// 1.2.Найти тип регистра по коду типа
-		ProductRegisterType regType = prodServ.findProdRegTypeByValue("02.001.005_45344_CoPalFF", true);
+		ProductRegisterType regType = regTypeServ.findProdRegTypeByValue("02.001.005_45344_CoPalFF", true);
 		// 1.3 Очистить продуктовый регистр у договора, если он привязан к договору
-		prodServ.deleteProdRegByProdAndRegType(product, regType);
+		regServ.deleteProdRegByProdAndRegType(product, regType);
 		// 1.4 Проверить, что ПР, который мы будем создавать, к началу теста отсутствует у договора
-		ProductRegister prodReg = prodServ.findProdRegByProductAndRegType(product, regType, false);
+		ProductRegister prodReg = regServ.findProdRegByProductAndRegType(product, regType, false);
 		Assertions.assertNull(prodReg, "1.4.Не удалось удалить продуктовый регистр");
 
 		// 2 Создать тестовый запрос на создание дополнительного продуктового регистра к существующему договору
@@ -230,7 +237,7 @@ class IntegrateTests {
 		resAct.andExpect(status().is(200));
 
 		// 4 проверка создания продуктового регистра в базе
-		prodReg = prodServ.findProdRegByProductAndRegType(product, regType, false);
+		prodReg = regServ.findProdRegByProductAndRegType(product, regType, false);
 		Assertions.assertNotNull(prodReg, "3.Не создан продуктовый регистр");
 
 		// 5 проверка наличия привязок продуктовых регистров и допсоглашений к нашему договору
@@ -243,7 +250,7 @@ class IntegrateTests {
 		Assertions.assertNotNull(prodReg.getAccountNumber(), "5.Не получен номер счета для продуктового регистра договора!");
 
 		// 7 формирование тела ожидаемого ответа
-		ProdRegCreateResponseBody resBody = prodServ.formProdRegResponse(prodReg);
+		ProdRegCreateResponseBody resBody = regServ.formProdRegResponse(prodReg);
 		var expected = mapper.writeValueAsString(resBody);
 
 		// 8 проверка содержимого ответа на запрос

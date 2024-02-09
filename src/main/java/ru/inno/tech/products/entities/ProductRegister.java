@@ -6,7 +6,7 @@ import static jakarta.persistence.GenerationType.IDENTITY;
 
 @Entity
 @Table(name="tpp_product_register")
-@Getter @Setter @AllArgsConstructor @NoArgsConstructor @ToString
+@Getter @Setter @AllArgsConstructor @NoArgsConstructor
 public class ProductRegister {
     @Id
     @GeneratedValue(strategy = IDENTITY)

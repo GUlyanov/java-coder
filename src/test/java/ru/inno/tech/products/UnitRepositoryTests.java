@@ -24,11 +24,6 @@ public class UnitRepositoryTests {
     ProductRegisterTypeRepository prodRegTypeRep;
     @Autowired
     ProductRegisterRepository prodRegRep;
-    /*
-    @Autowired
-    AccountTypeRepository accTypeRep;
-    @Autowired
-    AccountPoolRepository accPoolRep; */
 
     @Test
     @DisplayName("1.Проверка репозитория продуктов")
